@@ -5,13 +5,36 @@ import './sidebar.css'
 import { Avatar, IconButton } from '@mui/material';
 import { SearchOutlined } from '@mui/icons-material';
 import SidebarChat from './SidebarChat';
+import { onSnapshot, collection, query } from "firebase/firestore";
+import db from './firebase'
+import {useState, useEffect} from 'react'
+import {useStateValue} from './StateProvider'
 
 function Sidebar() {
+
+  const [rooms, setRooms] = useState([])
+  const [{user}, dispatch] = useStateValue()
+
+  useEffect(() => {
+    const q = query(collection(db, "rooms"));
+    onSnapshot(q, (querySnap) => {
+      let arr = [];
+      querySnap.forEach((doc) => {
+        arr.push( {
+          id: doc.id,
+          data: doc.data()
+        })
+      });
+      setRooms(arr);
+    })
+  }, [])  
+
+  console.log(user)
 
   return (
     <div className='sidebar'>
       <div className='sidebar__header'>
-        <Avatar />
+        <Avatar src={user?.photoURL}/>
         <div className='sidebar__headerRight'>
           <IconButton>
             <DonutLargeIcon />
@@ -34,9 +57,9 @@ function Sidebar() {
 
       <div className='sidebar__chats'>
         <SidebarChat addNewChat/>
-        <SidebarChat />
-        <SidebarChat />
-        <SidebarChat />
+        {rooms.map(room => (
+          <SidebarChat key={room.id} id={room.id} name={room.data.name}/>
+        ))}
       </div>
     </div>
   )
