@@ -1,14 +1,15 @@
 .chat{
-  flex: 0.65;
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .chat__header{
-  padding: 20px;
+  height: 60px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid lightgray;
+  padding: 0 15px;
 }
 
 .chat__headerInfo {
@@ -94,4 +95,9 @@
 .chat__footer > .MuiSvgIcon-root {
   padding: 10px;
   color: gray;
+}
+
+.nochat{
+  background-color: white;
+  flex: 1;
 }

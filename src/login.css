@@ -14,6 +14,10 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px;
 }
 
+.login__text > h1 {
+  font-weight: 400;
+}
+
 .login__container > img{
   object-fit: contain;
   height: 100px;
@@ -23,6 +27,10 @@
 .login__container > button{
   margin-top: 50px;
   text-transform: inherit !important;
-  background-color: #0a8d48 !important;
+  background-color: #46ca55 !important;
   color: white;
+}
+
+.login__container > button:hover{
+  background-color: #33af41 !important;
 }

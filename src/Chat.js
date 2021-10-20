@@ -6,7 +6,8 @@ import InsertEmoticonIcon from '@mui/icons-material/InsertEmoticon';
 import MicIcon from '@mui/icons-material/Mic';
 import {useParams} from 'react-router-dom'
 import db from './firebase'
-import {doc, onSnapshot, query, collection, orderBy} from 'firebase/firestore'
+import {doc, onSnapshot, query, collection, orderBy, addDoc, FieldValue, serverTimestamp} from 'firebase/firestore'
+import {useStateValue} from './StateProvider'
 
 function Chat() {
 
@@ -14,6 +15,10 @@ function Chat() {
   const [input, setInput] = useState('')
   const {roomId} = useParams()
   const [roomName, setRoomName] = useState('')
+  const [messages, setMessages] = useState([])
+  const [{user}, dispatch] = useStateValue()
+
+  console.log(user)
 
   useEffect(() => {
     setSeed(Math.floor(Math.random() * 500))
@@ -24,25 +29,53 @@ function Chat() {
       onSnapshot(doc(db, 'rooms', roomId), (doc) => {
         setRoomName(doc.data().name)
       })
+      let ref = collection(db, 'rooms', roomId, 'messages')
+      let orderedMessages = query(ref, orderBy('timestamp', 'asc'))
+      onSnapshot(
+        orderedMessages,
+        snapshot => {
+        let arr = []
+        snapshot.docs.map(docs => 
+          arr.push({
+            data: docs.data()
+          }))
+        setMessages(arr)
+      })
     }
-  }, [roomId])
 
+  }, [roomId])
 
   const sendMessage = e => {
     e.preventDefault()
-    console.log('yoo types >> ', input)
+
+    let ref = collection(db, 'rooms', roomId, 'messages')
+    addDoc(ref, {
+      message: input,
+      name: user.displayName,
+      timestamp: serverTimestamp(new FieldValue),
+      email: user.email
+    })
+
     setInput('')
   }
 
+  console.log('This is the message', messages)
+
   return (
-    <div className='chat'>
-      <div className='chat__header'>
-        <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`}/>
-       
+    <>
+    {roomId ? <div className='chat'>
+     <div className='chat__header'>
+        <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`}/> 
         <div className='chat__headerInfo'>
           <h3>{roomName}</h3>
-          <p>Last seen at ...</p>
+          <p>
+            last seen{" "}
+            {new Date(
+              messages[messages.length - 1]?.data.timestamp?.toDate()
+            ).toUTCString()}
+          </p>
         </div>
+
         <div className='chat__headerRight'>
           <IconButton>
             <SearchOutlined />
@@ -57,15 +90,15 @@ function Chat() {
       </div>
 
       <div className='chat__body'>
-        <p className= {`chat__message ${true && 'chat__reciever'}`}>
-          <span className='chat__name'>
-            Tammibriggs
-          </span>
-          Hey Guys
-          <span className='chat__timestamp'>3.52pm</span>
-        </p>
-        <p className='chat__message'>Hey Guys</p>
-        <p className='chat__message'>Hey Guys</p>
+        {messages.map((message) => (
+          <p className= {`chat__message ${message.data.email === user.email && 'chat__reciever'}`}>
+            <span className='chat__name'>{message.data.name}</span>
+            {message.data.message}
+            <span className='chat__timestamp'>
+              {new Date(message.data.timestamp?.toDate()).toUTCString()}
+            </span>
+          </p>
+        ))}
       </div>
       <div className='chat__footer'>
         <InsertEmoticonIcon />
@@ -77,7 +110,8 @@ function Chat() {
         </form>
         <MicIcon />
       </div>
-    </div>
+    </div> : <div className='nochat'></div> }
+    </>
   )
 }
 

@@ -20,7 +20,7 @@ function Sidebar() {
     onSnapshot(q, (querySnap) => {
       let arr = [];
       querySnap.forEach((doc) => {
-        arr.push( {
+        arr.push({
           id: doc.id,
           data: doc.data()
         })
@@ -28,8 +28,6 @@ function Sidebar() {
       setRooms(arr);
     })
   }, [])  
-
-  console.log(user)
 
   return (
     <div className='sidebar'>
